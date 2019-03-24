@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="LocalScript" referent="RBX0F13CAE601004D10B49A2345ED471EA2">
+	<Item class="LocalScript" referent="RBX7D8122E93DD5493FB55893B2A83D2BBF">
 		<Properties>
 			<bool name="Disabled">false</bool>
 			<Content name="LinkedSource"><null></null></Content>
@@ -14,21 +14,24 @@
 --├────────────────────┴──────────────────────────────────────────────────────────────────────────┐
 --│                                         -≡ IMPORTANT ≡-                                       │
 --│                    BY USEING THIS SYSTEM, YOU ARE AGREEING TO THE LICENSE.                    │
---│      THE LICENSE FOR THIS SYSTEM IS PROVIDED AS A CHILD TO THIS SCRIPT. (SnowFX.License)      │ 
+--│      THE LICENSE FOR THIS SYSTEM IS PROVIDED AS A CHILD TO THIS SCRIPT. (SnowFX.License)      │
 --│ IF THE PROVIDED COPY IS MISSING, A COPY MAY BE OBTAINED AT: https://pastebin.com/raw/ANqh9F62 │
 --│  SHOULD THE LINK ABOVE NOT PROVIDE A COPY OF THE LICENSE, PLEASE CONTACT NICK540 FOR A COPY.  │
 --└───────────────────────────────────────────────────────────────────────────────────────────────┘
 
 local EffectDestination = workspace -- Object the effect will be put under
 local DefaultFog = {Color3:fromRGB(191, 191, 191),0,100000} -- Format: {Color3 FogColor, Number FogStart, Number FogEnd}
-local DefaultOutdoorAmbient Color3.fromRGB(173,173,173)
+local DefaultOutdoorAmbient = Color3.fromRGB(173,173,173)
+local DefaultExposure = 1.12
 local OutdoorAmbient = {0,0} -- Hue and Saturation for the OutdoorAmbient
 local FogColor = {0,0} -- Hue and Saturation for the FogColor
 local DayV = 0.678431391716 -- Value for the FogColor and OutdoorAmbient in HSV during the day
-local NightV = 0.039215687662363 -- Value for the FogColor and OutdoorAmbient in HSV during the night
+local NightV = 0.15  -- Value for the FogColor and OutdoorAmbient in HSV during the night
 local FogStart = 0
 local FogEnd = 150
-local SkyFogTransparency = 0.25
+local DayExposure = 1.12
+local NightExposure = 0.32
+local SkyFogTransparency = 0
 -- These Variables should be a value equal to or between 0 and 1
 local SnowMaxTransparency = 0.7
 local SnowMinTransparency = 0.3
@@ -48,10 +51,10 @@ local Enabled = SnowSys.Enabled.Value
 local MD = SnowSys.MaxDistance
 local Prt = SnowSys.Particle
 local Snow = Prt.ParticleEmitter
-local DayFog = Color3.fromHSV(FogColor[0],FogColor[1],DayV)
-local NightFog = Color3.fromHSV(FogColor[0],FogColor[1],NightV)
-local DayAmbiant = Color3.fromHSV(OutdoorAmbient[0],OutdoorAmbient[1],DayV)
-local NightAmbiant = Color3.fromHSV(OutdoorAmbient[0],OutdoorAmbient[1],NightV)
+local DayFog = Color3.fromHSV(FogColor[1],FogColor[2],DayV)
+local NightFog = Color3.fromHSV(FogColor[1],FogColor[2],NightV)
+local DayAmbiant = Color3.fromHSV(OutdoorAmbient[1],OutdoorAmbient[2],DayV)
+local NightAmbiant = Color3.fromHSV(OutdoorAmbient[1],OutdoorAmbient[2],NightV)
 local OldPos
 local NewPos -- Cam.Cframe buffer
 local TimePercent
@@ -79,21 +82,23 @@ local function AdjustEffect()
 		TimePercent = 1+-1*(0.5*math.cos(1*(math.rad(game.Lighting.ClockTime*15)))+0.5) -- Should be 0 when ClockTime = 0, 1 at 12, 0.5 at 6 or 18
 		if TimePercent > LowCutoff and TimePercent < HighCutoff then
 			TransitPercent = (TimePercent-LowCutoff)/(HighCutoff-LowCutoff)
-			Lighting.FogColor = Color3.fromHSV(FogColor[0],FogColor[1],NightV * (1-TransitPercent) + (DayV*TransitPercent))
-			Lighting.OutdoorAmbient = Color3.fromHSV(OutdoorAmbient[0],OutdoorAmbient[1],NightV * (1-TransitPercent) + (DayV*TransitPercent))
+			Lighting.FogColor = Color3.fromHSV(FogColor[1],FogColor[2],NightV * (1-TransitPercent) + (DayV*TransitPercent))
+			Lighting.OutdoorAmbient = Color3.fromHSV(OutdoorAmbient[1],OutdoorAmbient[2],NightV * (1-TransitPercent) + (DayV*TransitPercent))
+			Lighting.ExposureCompensation = NightExposure * (1-TransitPercent) + (DayExposure*TransitPercent)
 			Snow.Transparency = NumberSequence.new (SnowMinTransparency * (1-TransitPercent) + (SnowMaxTransparency*TransitPercent))
 		elseif TimePercent >= HighCutoff then
 			Lighting.FogColor = DayFog
 			Lighting.OutdoorAmbient = DayAmbiant
+			Lighting.ExposureCompensation = DayExposure
 			Snow.Transparency = NumberSequence.new (SnowMinTransparency)
 		else
 			Lighting.FogColor = NightFog
 			Lighting.OutdoorAmbient = NightAmbiant
+			Lighting.ExposureCompensation = NightExposure
 			Snow.Transparency = NumberSequence.new (SnowMaxTransparency)
 		end 
 	end
 end
-AdjustEffect()
 
 local function ToggleEffect()
 	if SnowSys.Enabled.Value then
@@ -108,11 +113,12 @@ local function ToggleEffect()
 		SnowSys.MaxDistance.Transparency = 1
 		SnowSys.Particle.ParticleEmitter.Enabled = false
 		Lighting.OutdoorAmbient = DefaultOutdoorAmbient
-		Lighting.FogColor = DefaultFog[0]
-		Lighting.FogStart = DefaultFog[1]
-		Lighting.FogEnd = DefaultFog[2]
+		Lighting.FogColor = DefaultFog[1]
+		Lighting.FogStart = DefaultFog[2]
+		Lighting.FogEnd = DefaultFog[3]
 	end
 end
+ToggleEffect()
 
 --┌──────────────────┐
 --│ ATTACH FUNCTIONS │
@@ -123,7 +129,7 @@ game.Lighting:GetPropertyChangedSignal("ClockTime"):connect(AdjustEffect)
 SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></ProtectedString>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Model" referent="RBXE31667EAD47240D6AD2C14F9C53FE5C4">
+		<Item class="Model" referent="RBXD99590071468496298262BE4513D9244">
 			<Properties>
 				<CoordinateFrame name="ModelInPrimary">
 					<X>0</X>
@@ -143,7 +149,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 				<Ref name="PrimaryPart">null</Ref>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="MeshPart" referent="RBX77C4F6FD5BC4462D808313E3372F14E0">
+			<Item class="MeshPart" referent="RBX0DFB768260FC4E978C2A6973E83D8CAF">
 				<Properties>
 					<bool name="Anchored">true</bool>
 					<float name="BackParamA">-0.5</float>
@@ -1131,7 +1137,7 @@ AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 					</Vector3>
 				</Properties>
 			</Item>
-			<Item class="MeshPart" referent="RBX529E0EB93D8144EFA6A98AE097C5025F">
+			<Item class="MeshPart" referent="RBX7EC42FA9F8544720A788981EB510A740">
 				<Properties>
 					<bool name="Anchored">true</bool>
 					<float name="BackParamA">-0.5</float>
@@ -2118,7 +2124,7 @@ AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 						<Z>100</Z>
 					</Vector3>
 				</Properties>
-				<Item class="ParticleEmitter" referent="RBX433927ECE2F646E0A81CC32E5FFA0A34">
+				<Item class="ParticleEmitter" referent="RBX1996E29F1E92470D95E82A7F8E339FEB">
 					<Properties>
 						<Vector3 name="Acceleration">
 							<X>0</X>
@@ -2131,7 +2137,7 @@ AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 						<bool name="Enabled">true</bool>
 						<NumberRange name="Lifetime">100 150 </NumberRange>
 						<float name="LightEmission">0</float>
-						<float name="LightInfluence">0</float>
+						<float name="LightInfluence">0.899999976</float>
 						<bool name="LockedToPart">false</bool>
 						<string name="Name">ParticleEmitter</string>
 						<float name="Rate">2500</float>
@@ -2151,7 +2157,7 @@ AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 					</Properties>
 				</Item>
 			</Item>
-			<Item class="BoolValue" referent="RBXDC56483FB2514956A61E4B7B6C9F1E99">
+			<Item class="BoolValue" referent="RBX6E37A7009BCB41B395F069B6BB79B4DD">
 				<Properties>
 					<string name="Name">Enabled</string>
 					<BinaryString name="Tags"></BinaryString>
@@ -2159,7 +2165,7 @@ AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="LocalScript" referent="RBX7F3525655A0E466F840E11CCC5B8780D">
+		<Item class="LocalScript" referent="RBX2B9E9082287F40E684D0D4D7A434923D">
 			<Properties>
 				<bool name="Disabled">true</bool>
 				<Content name="LinkedSource"><null></null></Content>

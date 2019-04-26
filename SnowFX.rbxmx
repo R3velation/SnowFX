@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="LocalScript" referent="RBX7D8122E93DD5493FB55893B2A83D2BBF">
+	<Item class="LocalScript" referent="RBXB11AEE74B72E4A47AF3CBF192238391F">
 		<Properties>
 			<bool name="Disabled">false</bool>
 			<Content name="LinkedSource"><null></null></Content>
@@ -25,11 +25,11 @@ local DefaultOutdoorAmbient = Color3.fromRGB(173,173,173)
 local DefaultExposure = 1.12
 local OutdoorAmbient = {0,0} -- Hue and Saturation for the OutdoorAmbient
 local FogColor = {0,0} -- Hue and Saturation for the FogColor
-local DayV = 0.678431391716 -- Value for the FogColor and OutdoorAmbient in HSV during the day
+local DayV = 1 -- Value for the FogColor and OutdoorAmbient in HSV during the day
 local NightV = 0.15  -- Value for the FogColor and OutdoorAmbient in HSV during the night
 local FogStart = 0
 local FogEnd = 150
-local DayExposure = 1.12
+local DayExposure = 1.32
 local NightExposure = 0.32
 local SkyFogTransparency = 0
 -- These Variables should be a value equal to or between 0 and 1
@@ -129,7 +129,7 @@ game.Lighting:GetPropertyChangedSignal("ClockTime"):connect(AdjustEffect)
 SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></ProtectedString>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Model" referent="RBXD99590071468496298262BE4513D9244">
+		<Item class="Model" referent="RBXC0F2B80D76464C1EA04BABEF32299B92">
 			<Properties>
 				<CoordinateFrame name="ModelInPrimary">
 					<X>0</X>
@@ -149,7 +149,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 				<Ref name="PrimaryPart">null</Ref>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="MeshPart" referent="RBX0DFB768260FC4E978C2A6973E83D8CAF">
+			<Item class="MeshPart" referent="RBX959EBBC69A43496795507A39B3E93116">
 				<Properties>
 					<bool name="Anchored">true</bool>
 					<float name="BackParamA">-0.5</float>
@@ -175,6 +175,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 						<R22>0.999996543</R22>
 					</CoordinateFrame>
 					<bool name="CanCollide">false</bool>
+					<bool name="CastShadow">true</bool>
 					<int name="CollisionGroupId">0</int>
 					<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
 					<PhysicalProperties name="CustomPhysicalProperties">
@@ -204,6 +205,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 					<Content name="MeshID"><url>rbxassetid://1483168750</url></Content>
 					<Content name="MeshId"><url>rbxassetid://1483168750</url></Content>
 					<string name="Name">MaxDistance</string>
+					<SharedString name="PhysicalConfigData">1B2M2Y8AsgTpgAmY7PhCfg==</SharedString>
 					<BinaryString name="PhysicsData"><![CDATA[Q1NHUEhTBQAAABAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAgD82AAAA
 BAAAAMRvUL85etw+RAG/PkKmS79GW+w+RAG/PgAAAL8UA0Y/RAG/PgAAAL85etw+RAE/P+j+
 Tr85etw+hGjEPm8jPb/OPA4/RAG/PqvvDr/PfTw/RAG/PgAAAL/eATU/sAEAPwAAAL/OPA4/
@@ -1108,6 +1110,7 @@ AAAWAAAAHwAAABcAAAAXAAAAHwAAACAAAAAXAAAAIAAAACEAAAAXAAAAIQAAAB0AAAAXAAAA
 HQAAABwAAAAXAAAAHAAAABgAAAAYAAAAHAAAABsAAAAYAAAAGwAAABkAAAAZAAAAGwAAABoA
 AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 					<float name="Reflectance">0</float>
+					<token name="RenderFidelity">1</token>
 					<float name="RightParamA">-0.5</float>
 					<float name="RightParamB">0.5</float>
 					<token name="RightSurface">0</token>
@@ -1137,7 +1140,7 @@ AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 					</Vector3>
 				</Properties>
 			</Item>
-			<Item class="MeshPart" referent="RBX7EC42FA9F8544720A788981EB510A740">
+			<Item class="MeshPart" referent="RBX76B4E9CB1DF44549805C983545B9E9F2">
 				<Properties>
 					<bool name="Anchored">true</bool>
 					<float name="BackParamA">-0.5</float>
@@ -1163,6 +1166,7 @@ AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 						<R22>0.999996543</R22>
 					</CoordinateFrame>
 					<bool name="CanCollide">false</bool>
+					<bool name="CastShadow">true</bool>
 					<int name="CollisionGroupId">0</int>
 					<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
 					<PhysicalProperties name="CustomPhysicalProperties">
@@ -1192,6 +1196,7 @@ AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 					<Content name="MeshID"><url>rbxassetid://1483168750</url></Content>
 					<Content name="MeshId"><url>rbxassetid://1483168750</url></Content>
 					<string name="Name">Particle</string>
+					<SharedString name="PhysicalConfigData">1B2M2Y8AsgTpgAmY7PhCfg==</SharedString>
 					<BinaryString name="PhysicsData"><![CDATA[Q1NHUEhTBQAAABAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAgD82AAAA
 BAAAAMRvUL85etw+RAG/PkKmS79GW+w+RAG/PgAAAL8UA0Y/RAG/PgAAAL85etw+RAE/P+j+
 Tr85etw+hGjEPm8jPb/OPA4/RAG/PqvvDr/PfTw/RAG/PgAAAL/eATU/sAEAPwAAAL/OPA4/
@@ -2096,6 +2101,7 @@ AAAWAAAAHwAAABcAAAAXAAAAHwAAACAAAAAXAAAAIAAAACEAAAAXAAAAIQAAAB0AAAAXAAAA
 HQAAABwAAAAXAAAAHAAAABgAAAAYAAAAHAAAABsAAAAYAAAAGwAAABkAAAAZAAAAGwAAABoA
 AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 					<float name="Reflectance">0</float>
+					<token name="RenderFidelity">1</token>
 					<float name="RightParamA">-0.5</float>
 					<float name="RightParamB">0.5</float>
 					<token name="RightSurface">0</token>
@@ -2124,7 +2130,7 @@ AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 						<Z>100</Z>
 					</Vector3>
 				</Properties>
-				<Item class="ParticleEmitter" referent="RBX1996E29F1E92470D95E82A7F8E339FEB">
+				<Item class="ParticleEmitter" referent="RBX74B5EB2AD66749E78DB6F85FF5BA883E">
 					<Properties>
 						<Vector3 name="Acceleration">
 							<X>0</X>
@@ -2157,7 +2163,7 @@ AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 					</Properties>
 				</Item>
 			</Item>
-			<Item class="BoolValue" referent="RBX6E37A7009BCB41B395F069B6BB79B4DD">
+			<Item class="BoolValue" referent="RBX9B4194698C9C4D2A8E8AE0080B60B85E">
 				<Properties>
 					<string name="Name">Enabled</string>
 					<BinaryString name="Tags"></BinaryString>
@@ -2165,7 +2171,7 @@ AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="LocalScript" referent="RBX2B9E9082287F40E684D0D4D7A434923D">
+		<Item class="LocalScript" referent="RBX88D78ABFAA124610ACDBC154BB364F6E">
 			<Properties>
 				<bool name="Disabled">true</bool>
 				<Content name="LinkedSource"><null></null></Content>
@@ -2213,4 +2219,7 @@ AAAdAAAAIQAAAB4AAAA=]]></BinaryString>
 			</Properties>
 		</Item>
 	</Item>
+	<SharedStrings>
+		<SharedString md5="1B2M2Y8AsgTpgAmY7PhCfg=="></SharedString>
+	</SharedStrings>
 </roblox>

@@ -14,10 +14,12 @@
 --└─────────────────────┘
 
 local EffectDestination = workspace -- Object the effect will be put under
-local UpdatePriority = 0 -- RenderStep Priority.  Set to 0 to mitigate the ability to clip the camera out of the sphere on high sensitivity mice
+local UpdatePriority = 50 -- RenderStep Priority.  Set to 0 to mitigate the ability to clip the camera out of the effect
+local UseOldPosition = false -- Forces fallback positioning if true
+local AntiClipOffset = 0.7 -- 
 local DefaultFog = {Color3:fromRGB(191, 191, 191),0,100000} -- Format: {Color3 FogColor, Number FogStart, Number FogEnd}
 local DefaultOutdoorAmbient = Color3.fromRGB(173,173,173)
-local DefaultExposure = 1.12
+local DefaultExposure = 1
 local OutdoorAmbient = {0,0} -- Hue and Saturation for the OutdoorAmbient
 local FogColor = {0,0} -- Hue and Saturation for the FogColor
 local DayV = 1 -- Value for the FogColor and OutdoorAmbient in HSV during the day
@@ -52,6 +54,7 @@ local DayAmbiant = Color3.fromHSV(OutdoorAmbient[1],OutdoorAmbient[2],DayV)
 local NightAmbiant = Color3.fromHSV(OutdoorAmbient[1],OutdoorAmbient[2],NightV)
 local TimePercent
 local TransitPercent
+local FXPosition
 
 SnowSys.Parent = EffectDestination
 
@@ -59,10 +62,22 @@ SnowSys.Parent = EffectDestination
 --│ UPDATE FUNCTIONS │
 --└──────────────────┘
 
-local function UpdatePosition()
+local function AntiClipUpdatePosition()
+	if Enabled then
+		FXPosition = Vector3.new(
+			(Cam.CFrame.Position.X+Cam.Focus.X)*AntiClipOffset,
+			(Cam.CFrame.Position.Y+Cam.Focus.Y)*AntiClipOffset,
+			(Cam.CFrame.Position.Z+Cam.Focus.Z)*AntiClipOffset
+			)
+		MD.Position = FXPosition
+		Prt.Position = MD.Position
+	end
+end
+
+local function FallbackUpdatePosition()
 	if Enabled then
 		MD.CFrame = Cam.CFrame
-		Prt.CFrame = Cam.CFrame
+		Prt.CFrame = MD.CFrame
 	end
 end
 
@@ -91,14 +106,12 @@ end
 
 local function ToggleEffect()
 	if SnowSys.Enabled.Value then
-		Enabled = true
 		SnowSys.MaxDistance.Transparency = SkyFogTransparency
 		SnowSys.Particle.ParticleEmitter.Enabled = true
 		Lighting.FogStart = FogStart
 		Lighting.FogEnd = FogEnd
 		AdjustEffect()
 	else
-		Enabled = false
 		SnowSys.MaxDistance.Transparency = 1
 		SnowSys.Particle.ParticleEmitter.Enabled = false
 		Lighting.OutdoorAmbient = DefaultOutdoorAmbient
@@ -109,11 +122,25 @@ local function ToggleEffect()
 end
 ToggleEffect()
 
+local function PositionMethod()
+	pcall(function()
+		RunService:UnbindFromRenderStep("SnowFX")
+	end)
+	if game.Players.LocalPlayer.CameraMaxZoomDistance < (2048*AntiClipOffset) and not UseOldPosition then
+		RunService:BindToRenderStep("SnowFX",UpdatePriority,AntiClipUpdatePosition)
+	else
+		if game.Players.LocalPlayer.CameraMaxZoomDistance >= (2048*AntiClipOffset) and not UseOldPosition then
+			warn("CameraMaxZoomDistance is in excess of the AntiClip threshold, useing fallback positioning instead.")
+		end
+		RunService:BindToRenderStep("SnowFX",UpdatePriority,FallbackUpdatePosition)
+	end
+end
+
 --┌──────────────────┐
 --│ ATTACH FUNCTIONS │
 --└──────────────────┘
 
-RunService:BindToRenderStep("SnowFX",UpdatePriority,UpdatePosition)
+PositionMethod()
 game.Lighting:GetPropertyChangedSignal("ClockTime"):connect(AdjustEffect)
 SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></ProtectedString>
 			<BinaryString name="Tags"></BinaryString>

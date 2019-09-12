@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="LocalScript" referent="RBXB11AEE74B72E4A47AF3CBF192238391F">
+	<Item class="LocalScript" referent="RBX017FF370B7094CD79A27DDBA89D543F8">
 		<Properties>
 			<bool name="Disabled">false</bool>
 			<Content name="LinkedSource"><null></null></Content>
@@ -145,7 +145,7 @@ game.Lighting:GetPropertyChangedSignal("ClockTime"):connect(AdjustEffect)
 SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></ProtectedString>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Model" referent="RBXC0F2B80D76464C1EA04BABEF32299B92">
+		<Item class="Model" referent="RBX0AC5B4697995465D9885A231EA3DA969">
 			<Properties>
 				<CoordinateFrame name="ModelInPrimary">
 					<X>0</X>
@@ -165,7 +165,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 				<Ref name="PrimaryPart">null</Ref>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="MeshPart" referent="RBX959EBBC69A43496795507A39B3E93116">
+			<Item class="MeshPart" referent="RBX01375A7981204B6787901A4EBE9E34AA">
 				<Properties>
 					<bool name="Anchored">true</bool>
 					<float name="BackParamA">-0.5</float>
@@ -249,13 +249,13 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 						<Z>0</Z>
 					</Vector3>
 					<Vector3 name="size">
-						<X>500</X>
-						<Y>500</Y>
-						<Z>500</Z>
+						<X>2048</X>
+						<Y>2048</Y>
+						<Z>2048</Z>
 					</Vector3>
 				</Properties>
 			</Item>
-			<Item class="MeshPart" referent="RBX76B4E9CB1DF44549805C983545B9E9F2">
+			<Item class="MeshPart" referent="RBXF278145BCDFF41B29B52226B836D4F5C">
 				<Properties>
 					<bool name="Anchored">true</bool>
 					<float name="BackParamA">-0.5</float>
@@ -268,7 +268,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 					<token name="BottomSurfaceInput">0</token>
 					<CoordinateFrame name="CFrame">
 						<X>167.200043</X>
-						<Y>304.506744</Y>
+						<Y>304.507233</Y>
 						<Z>52.7000122</Z>
 						<R00>0.999996543</R00>
 						<R01>-1.00044417e-10</R01>
@@ -344,7 +344,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 						<Z>100</Z>
 					</Vector3>
 				</Properties>
-				<Item class="ParticleEmitter" referent="RBX74B5EB2AD66749E78DB6F85FF5BA883E">
+				<Item class="ParticleEmitter" referent="RBXF209BF70A6C6435FA4FA79A1340A1DE2">
 					<Properties>
 						<Vector3 name="Acceleration">
 							<X>0</X>
@@ -377,7 +377,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 					</Properties>
 				</Item>
 			</Item>
-			<Item class="BoolValue" referent="RBX9B4194698C9C4D2A8E8AE0080B60B85E">
+			<Item class="BoolValue" referent="RBXD87D2E596D214C59BE54841AAEDC1783">
 				<Properties>
 					<string name="Name">Enabled</string>
 					<BinaryString name="Tags"></BinaryString>
@@ -385,7 +385,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="LocalScript" referent="RBX88D78ABFAA124610ACDBC154BB364F6E">
+		<Item class="LocalScript" referent="RBX426D2A7E810B43AF8E60DB9868D2A998">
 			<Properties>
 				<bool name="Disabled">true</bool>
 				<Content name="LinkedSource"><null></null></Content>

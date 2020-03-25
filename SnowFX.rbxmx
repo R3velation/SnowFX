@@ -130,7 +130,7 @@ local function PositionMethod()
 		RunService:BindToRenderStep("SnowFX",UpdatePriority,AntiClipUpdatePosition)
 	else
 		if game.Players.LocalPlayer.CameraMaxZoomDistance >= (2048*AntiClipOffset) and not UseOldPosition then
-			warn("CameraMaxZoomDistance is in excess of the AntiClip threshold, useing fallback positioning instead.")
+			warn("CameraMaxZoomDistance is in excess of the AntiClip threshold, using fallback positioning instead.")
 		end
 		RunService:BindToRenderStep("SnowFX",UpdatePriority,FallbackUpdatePosition)
 	end

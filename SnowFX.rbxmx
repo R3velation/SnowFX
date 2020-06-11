@@ -11,6 +11,7 @@
 			<ProtectedString name="Source"><![CDATA[--┌───────────────────┐
 --│       SnowFX      │
 --│ A GPL Snow system │
+--|    Beta  0.1.0    |
 --└───────────────────┘
 
 local EffectDestination = workspace -- Object the effect will be put under

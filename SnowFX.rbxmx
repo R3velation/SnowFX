@@ -4,6 +4,7 @@
 	<External>nil</External>
 	<Item class="LocalScript" referent="RBX017FF370B7094CD79A27DDBA89D543F8">
 		<Properties>
+			<BinaryString name="AttributesSerialize"></BinaryString>
 			<bool name="Disabled">false</bool>
 			<Content name="LinkedSource"><null></null></Content>
 			<string name="Name">SnowFX</string>
@@ -11,16 +12,13 @@
 			<ProtectedString name="Source"><![CDATA[--┌───────────────────┐
 --│       SnowFX      │
 --│ A GPL Snow system │
---|    Beta  0.1.0    |
+--│    Beta  0.2.0    │
 --└───────────────────┘
 
 local EffectDestination = workspace -- Object the effect will be put under
 local UpdatePriority = 50 -- RenderStep Priority.  Set to 0 to mitigate the ability to clip the camera out of the effect
 local UseOldPosition = false -- Forces fallback positioning if true
-local AntiClipOffset = 0.7 -- 
-local DefaultFog = {Color3:fromRGB(191, 191, 191),0,100000} -- Format: {Color3 FogColor, Number FogStart, Number FogEnd}
-local DefaultOutdoorAmbient = Color3.fromRGB(173,173,173)
-local DefaultExposure = 1
+local AntiClipOffset = 0.7 -- Determines how far between the player and the camera the MaxDistance part will be.  Adjust this if you have clipping issues.
 local OutdoorAmbient = {0,0} -- Hue and Saturation for the OutdoorAmbient
 local FogColor = {0,0} -- Hue and Saturation for the FogColor
 local DayV = 1 -- Value for the FogColor and OutdoorAmbient in HSV during the day
@@ -44,15 +42,19 @@ local LowCutoff = 0.5
 local RunService = game:GetService("RunService")
 local Lighting =  game.Lighting
 local Cam = workspace.CurrentCamera
+local Interface = script.Interface
 local SnowSys = script.SnowSys:Clone()
-local Enabled = SnowSys.Enabled.Value
 local MD = SnowSys.MaxDistance
 local Prt = SnowSys.Particle
 local Snow = Prt.ParticleEmitter
 local DayFog = Color3.fromHSV(FogColor[1],FogColor[2],DayV)
 local NightFog = Color3.fromHSV(FogColor[1],FogColor[2],NightV)
-local DayAmbiant = Color3.fromHSV(OutdoorAmbient[1],OutdoorAmbient[2],DayV)
-local NightAmbiant = Color3.fromHSV(OutdoorAmbient[1],OutdoorAmbient[2],NightV)
+local DayAmbient = Color3.fromHSV(OutdoorAmbient[1],OutdoorAmbient[2],DayV)
+local NightAmbient = Color3.fromHSV(OutdoorAmbient[1],OutdoorAmbient[2],NightV)
+local DefaultFog = {game.Lighting.FogColor,game.Lighting.FogStart,game.Lighting.FogEnd} -- Format: {Color3 FogColor, Number FogStart, Number FogEnd}
+local DefaultOutdoorAmbient = game.Lighting.Ambient
+local DefaultExposure = game.Lighting.ExposureCompensation
+local Enabled = false
 local TimePercent
 local TransitPercent
 local FXPosition
@@ -93,12 +95,12 @@ local function AdjustEffect()
 			Snow.Transparency = NumberSequence.new (SnowMinTransparency * (1-TransitPercent) + (SnowMaxTransparency*TransitPercent))
 		elseif TimePercent >= HighCutoff then
 			Lighting.FogColor = DayFog
-			Lighting.OutdoorAmbient = DayAmbiant
+			Lighting.OutdoorAmbient = DayAmbient
 			Lighting.ExposureCompensation = DayExposure
 			Snow.Transparency = NumberSequence.new (SnowMinTransparency)
 		else
 			Lighting.FogColor = NightFog
-			Lighting.OutdoorAmbient = NightAmbiant
+			Lighting.OutdoorAmbient = NightAmbient
 			Lighting.ExposureCompensation = NightExposure
 			Snow.Transparency = NumberSequence.new (SnowMaxTransparency)
 		end 
@@ -106,7 +108,7 @@ local function AdjustEffect()
 end
 
 local function ToggleEffect()
-	if SnowSys.Enabled.Value then
+	if Enabled then
 		SnowSys.MaxDistance.Transparency = SkyFogTransparency
 		SnowSys.Particle.ParticleEmitter.Enabled = true
 		Lighting.FogStart = FogStart
@@ -121,8 +123,8 @@ local function ToggleEffect()
 		Lighting.FogEnd = DefaultFog[3]
 	end
 end
-ToggleEffect()
 
+-- Determines what positioning method to use.
 local function PositionMethod()
 	pcall(function()
 		RunService:UnbindFromRenderStep("SnowFX")
@@ -137,17 +139,88 @@ local function PositionMethod()
 	end
 end
 
+local function ApplyConfig()
+	DayFog = Color3.fromHSV(FogColor[1],FogColor[2],DayV)
+	NightFog = Color3.fromHSV(FogColor[1],FogColor[2],NightV)
+	DayAmbient = Color3.fromHSV(OutdoorAmbient[1],OutdoorAmbient[2],DayV)
+	NightAmbient = Color3.fromHSV(OutdoorAmbient[1],OutdoorAmbient[2],NightV)
+	SnowSys.MaxDistance.Transparency = SkyFogTransparency
+end
+
+--┌───────────┐
+--│ INTERFACE │
+--└───────────┘
+
+local FunctTable = {
+	[1] = function(Args) -- Set Enabled Ambient Color, Fog Color, Start, Stop, Day Exposure, Night Exposure, and Sky Fog Transparency.
+						 -- Format: {AmbH,AmbS,FogH,FogS,DayV,NightV,Start,Stop,DayExposure,NightExposure,FogTransparancy}
+		OutdoorAmbient = {Args[1],Args[2]}
+		FogColor = {Args[3],Args[4]} 
+		DayV = Args[5]
+		NightV = Args[6]  
+		FogStart = Args[7]
+		FogEnd = Args[8]
+		DayExposure = Args[9]
+		NightExposure = Args[10]
+		SkyFogTransparency = Args[11]
+		ApplyConfig()
+		AdjustEffect()
+	end,
+	[2] = function() -- Load Disabled Config from current lighting paramaters, Will Fail when Enabled.  This is already done on init.
+					 -- Todo Fix table requirements. :Invoke(2,{0}) will work while :Invoke(2) will not.
+		if not Enabled then
+			DefaultFog = {game.Lighting.FogColor,game.Lighting.FogStart,game.Lighting.FogEnd}
+			DefaultOutdoorAmbient = game.Lighting.Ambient
+			DefaultExposure = game.Lighting.ExposureCompensation
+			ApplyConfig()
+		else 
+			warn("Cannot load Disabled config from current lighting - Effect is enabled.")
+		end
+	end,
+	[3] = function(Args) -- Set Disabled Fog R G B, Fog Start, Fog End, OutdoorAmbient R G B, Exposure.
+						 -- Format: {FogR,FogG,FogB, FogStart, FogEnd, AmbR, AmbG, AmbB, Exposure}
+		DefaultFog = {Color3.fromRGB(Args[1],Args[2],Args[3]),Args[4],Args[5]}
+		DefaultOutdoorAmbient = Args[6]
+		DefaultExposure = Args[7]
+	end,
+	[4] = function(Args) -- Configures Positioning and Clipping mitigation
+						 -- Format: {AntiClip Offset, Update Priority, Force old positioning (0 or 1)}
+		AntiClipOffset = Args[1]
+		UpdatePriority = Args[2]
+		if Args[3] == 0 then 
+			UseOldPosition = false
+		else
+			UseOldPosition = true
+		end
+		PositionMethod()
+	end
+}
+
+local function Controller(OpEn,Args)
+	local t = type(OpEn)
+	if t == "boolean" then
+		Enabled = OpEn
+		ToggleEffect()
+	elseif t == "number" and typeof(Args)=="table" and #Args ~=0 then
+		FunctTable[OpEn](Args)
+	else
+		warn("Malformed call")
+	end
+end
+
 --┌──────────────────┐
 --│ ATTACH FUNCTIONS │
 --└──────────────────┘
 
 PositionMethod()
 game.Lighting:GetPropertyChangedSignal("ClockTime"):connect(AdjustEffect)
-SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></ProtectedString>
+Interface.OnInvoke = Controller
+]]></ProtectedString>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
 		<Item class="Model" referent="RBX0AC5B4697995465D9885A231EA3DA969">
 			<Properties>
+				<BinaryString name="AttributesSerialize"></BinaryString>
 				<CoordinateFrame name="ModelInPrimary">
 					<X>0</X>
 					<Y>0</Y>
@@ -169,6 +242,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 			<Item class="MeshPart" referent="RBX01375A7981204B6787901A4EBE9E34AA">
 				<Properties>
 					<bool name="Anchored">true</bool>
+					<BinaryString name="AttributesSerialize"></BinaryString>
 					<float name="BackParamA">-0.5</float>
 					<float name="BackParamB">0.5</float>
 					<token name="BackSurface">0</token>
@@ -196,17 +270,13 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 					<int name="CollisionGroupId">0</int>
 					<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
 					<PhysicalProperties name="CustomPhysicalProperties">
-						<CustomPhysics>true</CustomPhysics>
-						<Density>0.00999999978</Density>
-						<Friction>0.00999999978</Friction>
-						<Elasticity>0.5</Elasticity>
-						<FrictionWeight>1</FrictionWeight>
-						<ElasticityWeight>1</ElasticityWeight>
+						<CustomPhysics>false</CustomPhysics>
 					</PhysicalProperties>
 					<float name="FrontParamA">-0.5</float>
 					<float name="FrontParamB">0.5</float>
 					<token name="FrontSurface">0</token>
 					<token name="FrontSurfaceInput">0</token>
+					<bool name="HasSkinnedMesh">false</bool>
 					<Vector3 name="InitialSize">
 						<X>2</X>
 						<Y>2</Y>
@@ -243,7 +313,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 					<float name="TopParamB">0.5</float>
 					<token name="TopSurface">0</token>
 					<token name="TopSurfaceInput">0</token>
-					<float name="Transparency">0</float>
+					<float name="Transparency">1</float>
 					<Vector3 name="Velocity">
 						<X>0</X>
 						<Y>0</Y>
@@ -259,6 +329,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 			<Item class="MeshPart" referent="RBXF278145BCDFF41B29B52226B836D4F5C">
 				<Properties>
 					<bool name="Anchored">true</bool>
+					<BinaryString name="AttributesSerialize"></BinaryString>
 					<float name="BackParamA">-0.5</float>
 					<float name="BackParamB">0.5</float>
 					<token name="BackSurface">0</token>
@@ -297,6 +368,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 					<float name="FrontParamB">0.5</float>
 					<token name="FrontSurface">0</token>
 					<token name="FrontSurfaceInput">0</token>
+					<bool name="HasSkinnedMesh">false</bool>
 					<Vector3 name="InitialSize">
 						<X>2</X>
 						<Y>2</Y>
@@ -352,6 +424,7 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 							<Y>0.25</Y>
 							<Z>0</Z>
 						</Vector3>
+						<BinaryString name="AttributesSerialize"></BinaryString>
 						<ColorSequence name="Color">0 1 1 1 0 1 1 1 1 0 </ColorSequence>
 						<float name="Drag">0</float>
 						<token name="EmissionDirection">4</token>
@@ -378,16 +451,10 @@ SnowSys.Enabled:GetPropertyChangedSignal("Value"):connect(ToggleEffect)]]></Prot
 					</Properties>
 				</Item>
 			</Item>
-			<Item class="BoolValue" referent="RBXD87D2E596D214C59BE54841AAEDC1783">
-				<Properties>
-					<string name="Name">Enabled</string>
-					<BinaryString name="Tags"></BinaryString>
-					<bool name="Value">true</bool>
-				</Properties>
-			</Item>
 		</Item>
 		<Item class="LocalScript" referent="RBX426D2A7E810B43AF8E60DB9868D2A998">
 			<Properties>
+				<BinaryString name="AttributesSerialize"></BinaryString>
 				<bool name="Disabled">true</bool>
 				<Content name="LinkedSource"><null></null></Content>
 				<string name="Name">License</string>
@@ -733,6 +800,13 @@ consider it more useful to permit linking proprietary applications with the
 library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.
 --]]]]></ProtectedString>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+		</Item>
+		<Item class="BindableFunction" referent="RBX86175C2602184857AD02024C485B1B87">
+			<Properties>
+				<BinaryString name="AttributesSerialize"></BinaryString>
+				<string name="Name">Interface</string>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
